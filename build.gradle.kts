@@ -213,8 +213,18 @@ publishing {
     }
 
     repositories {
+/*
         maven {
             url = uri("https://nexus.gtnewhorizons.com/repository/releases/")
+            credentials {
+                username = System.getenv("MAVEN_USER") ?: "NONE"
+                password = System.getenv("MAVEN_PASSWORD") ?: "NONE"
+            }
+        }
+*/
+        maven {
+            name = "vogRepository"
+            url = uri("https://mvn.taskeren.cn/snapshots")
             credentials {
                 username = System.getenv("MAVEN_USER") ?: "NONE"
                 password = System.getenv("MAVEN_PASSWORD") ?: "NONE"
