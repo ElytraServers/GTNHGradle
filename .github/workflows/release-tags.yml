@@ -62,7 +62,7 @@ jobs:
         run: ./gradlew --info --stacktrace publish
         continue-on-error: true
         env:
-          MAVEN_USER: ${{ secrets.MAVEN_USER }}
-          MAVEN_PASSWORD: ${{ secrets.MAVEN_PASSWORD }}
+          vogRepositoryUsername: ${{ secrets.MAVEN_USER }}
+          vogRepositoryPassword: ${{ secrets.MAVEN_PASSWORD }}
         if: ${{ env.MAVEN_USER != '' }}
 
