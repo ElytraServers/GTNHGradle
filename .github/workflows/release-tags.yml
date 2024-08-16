@@ -64,5 +64,5 @@ jobs:
         env:
           vogRepositoryUsername: ${{ secrets.MAVEN_USER }}
           vogRepositoryPassword: ${{ secrets.MAVEN_PASSWORD }}
-        if: ${{ env.MAVEN_USER != '' }}
+        if: ${{ env.vogRepositoryUsername != '' }}
 
