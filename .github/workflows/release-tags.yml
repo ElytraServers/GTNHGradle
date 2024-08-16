@@ -59,7 +59,9 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Publish to Maven
-        run: ./gradlew --info --stacktrace publish
+        run: |
+          echo "$MAVEN_USER"
+          ./gradlew --info --stacktrace publish
         continue-on-error: true
         env:
           MAVEN_USER: ${{ secrets.MAVEN_USER }}
