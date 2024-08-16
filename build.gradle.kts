@@ -225,9 +225,9 @@ publishing {
         maven {
             name = "vogRepository"
             url = uri("https://mvn.taskeren.cn/snapshots")
-            credentials(PasswordCredentials::class)
-            authentication {
-                create<BasicAuthentication>("basic")
+            credentials {
+                username = System.getenv("MAVEN_USER") ?: "NONE"
+                password = System.getenv("MAVEN_PASSWORD") ?: "NONE"
             }
         }
     }
