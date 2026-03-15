@@ -233,10 +233,10 @@ publishing {
 */
         maven {
             name = "vogRepository"
-            url = uri("https://mvn.taskeren.cn/snapshots")
+            url = uri("https://maven.elytra.cn")
             credentials {
-                username = System.getenv("MAVEN_USER") ?: "NONE"
-                password = System.getenv("MAVEN_PASSWORD") ?: "NONE"
+                username = project.findProperty("MAVEN_USERNAME") as? String ?: "NONE"
+                password = project.findProperty("MAVEN_PASSWORD") as? String ?: "NONE"
             }
         }
     }
