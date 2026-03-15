@@ -1,5 +1,6 @@
 package com.gtnewhorizons.gtnhgradle.modules;
 
+import com.gtnewhorizons.retrofuturagradle.minecraft.RunMinecraftTask;
 import com.gtnewhorizons.retrofuturagradle.modutils.ModUtils;
 import com.gtnewhorizons.retrofuturagradle.shadow.com.google.common.collect.ImmutableMap;
 import com.gtnewhorizons.retrofuturagradle.shadow.com.google.common.collect.ImmutableSet;
@@ -13,6 +14,7 @@ import com.gtnewhorizons.retrofuturagradle.ObfuscationAttribute;
 import com.gtnewhorizons.retrofuturagradle.mcp.InjectTagsTask;
 import com.gtnewhorizons.retrofuturagradle.mcp.MCPTasks;
 import com.gtnewhorizons.retrofuturagradle.mcp.ReobfuscatedJar;
+import com.gtnewhorizons.retrofuturagradle.util.ProviderToStringWrapper;
 import org.gradle.api.Project;
 import org.gradle.api.artifacts.Configuration;
 import org.gradle.api.artifacts.ConfigurationContainer;
@@ -41,7 +43,7 @@ import org.gradle.jvm.toolchain.JavaToolchainService;
 import org.gradle.jvm.toolchain.JvmVendorSpec;
 import org.gradle.language.jvm.tasks.ProcessResources;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.kotlin.gradle.dsl.KotlinTopLevelExtension;
+import org.jetbrains.kotlin.gradle.dsl.KotlinBaseExtension;
 
 import javax.inject.Inject;
 import java.nio.charset.StandardCharsets;
@@ -148,7 +150,7 @@ public abstract class ToolchainModule implements GTNHModule {
             ((ModuleDependency) deps.add(JavaPlugin.COMPILE_ONLY_CONFIGURATION_NAME, UpdateableConstants.NEWEST_JABEL))
                 .setTransitive(false);
             // Workaround for https://github.com/bsideup/jabel/issues/174
-            deps.add(JavaPlugin.ANNOTATION_PROCESSOR_CONFIGURATION_NAME, "net.java.dev.jna:jna-platform:5.13.0");
+            deps.add(JavaPlugin.ANNOTATION_PROCESSOR_CONFIGURATION_NAME, "net.java.dev.jna:jna-platform:5.18.1");
             // Allow using jdk.unsupported classes like sun.misc.Unsafe in the compiled code, working around
             // JDK-8206937.
             deps.add(
@@ -181,7 +183,7 @@ public abstract class ToolchainModule implements GTNHModule {
         // Set up Kotlin if enabled
         project.getPlugins()
             .withId("org.jetbrains.kotlin.jvm", plugin -> {
-                final KotlinTopLevelExtension kotlin = (KotlinTopLevelExtension) project.getExtensions()
+                final KotlinBaseExtension kotlin = (KotlinBaseExtension) project.getExtensions()
                     .getByName("kotlin");
                 kotlin.jvmToolchain(8);
                 final Set<String> disabledKotlinTasks = ImmutableSet.of(
@@ -207,6 +209,19 @@ public abstract class ToolchainModule implements GTNHModule {
         // Set up basic project settings
         project.setGroup(
             gtnh.configuration.useModGroupForPublishing ? gtnh.configuration.modGroup : "com.github.GTNewHorizons");
+        // Default project.version to modVersion if no version has been set manually
+        if (project.getVersion() == Project.DEFAULT_VERSION) {
+            var ext = project.getExtensions()
+                .getExtraProperties();
+            project
+                .setVersion(
+                    new ProviderToStringWrapper(
+                        project.provider(
+                            () -> ext.has(GTNHConstants.MOD_VERSION_PROPERTY)
+                                ? ext.get(GTNHConstants.MOD_VERSION_PROPERTY)
+                                    .toString()
+                                : Project.DEFAULT_VERSION)));
+        }
         final BasePluginExtension base = project.getExtensions()
             .getByType(BasePluginExtension.class);
         if (!gtnh.configuration.customArchiveBaseName.isEmpty()) {
@@ -428,6 +443,16 @@ public abstract class ToolchainModule implements GTNHModule {
         if (!gtnh.configuration.apiPackage.isEmpty()) {
             project.getArtifacts()
                 .add("archives", tasks.named("apiJar"));
+        }
+
+        // run dir config for RFG run tasks
+        for (String clientTaskName : ImmutableSet.of("runClient", "runVanillaClient", "runObfClient")) {
+            tasks.named(clientTaskName, RunMinecraftTask.class)
+                .configure(t -> t.setWorkingDir(gtnh.configuration.runClientDirectory));
+        }
+        for (String serverTaskName : ImmutableSet.of("runServer", "runVanillaServer", "runObfServer")) {
+            tasks.named(serverTaskName, RunMinecraftTask.class)
+                .configure(t -> t.setWorkingDir(gtnh.configuration.runServerDirectory));
         }
     }
 }

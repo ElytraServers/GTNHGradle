@@ -265,9 +265,9 @@ public final class PropertiesConfiguration {
         required = false,
         docComment = """
             Whether to use modGroup as the maven publishing group.
-            Due to a history of using JitPack, the default is com.github.GTNewHorizons for all mods.
+            When false, com.github.GTNewHorizons is used.
             """)
-    public boolean useModGroupForPublishing = false;
+    public boolean useModGroupForPublishing = true;
 
     /** See annotation */
     @Prop(name = "autoUpdateBuildScript", isSettings = false, preferPopulated = true, required = false, docComment = """
@@ -468,14 +468,11 @@ public final class PropertiesConfiguration {
     public @NotNull String mixinPlugin = "";
 
     /** See annotation */
-    @Prop(
-        name = "mixinsPackage",
-        isSettings = false,
-        preferPopulated = true,
-        required = false,
-        docComment = """
-            Specify the package that contains all of your Mixins. You may only place Mixins in this package or the build will fail!
-            """)
+    @Prop(name = "mixinsPackage", isSettings = false, preferPopulated = true, required = false, docComment = """
+        Specify the package that contains all of your Mixins. The package must exist or
+        the build will fail. If you have a package property defined in your mixins.<modid>.json,
+        it must match with this or the build will fail.
+        """)
     public @NotNull String mixinsPackage = "";
 
     /** See annotation */
@@ -620,7 +617,7 @@ public final class PropertiesConfiguration {
               type can be one of [project, version],
               and the name is the Modrinth project or version slug/id of the other mod.
         Example: required-project:fplib;optional-project:gasstation;incompatible-project:gregtech
-        Note: GTNH Mixins is automatically set as a required dependency if usesMixins = true
+        Note: UniMixins is automatically set as a required dependency if usesMixins = true.
         """)
     public @NotNull String modrinthRelations = "";
 
@@ -660,6 +657,28 @@ public final class PropertiesConfiguration {
             projects. New projects should not use this parameter.
             """)
     public @NotNull String customArchiveBaseName = "";
+
+    /** See annotation */
+    @Prop(
+        name = "runClientWorkingDirectory",
+        isSettings = false,
+        preferPopulated = false,
+        required = false,
+        docComment = """
+            Optional parameter to customize the default working directory used by the runClient* tasks. Relative to the project directory.
+            """)
+    public @NotNull String runClientDirectory = "run/client";
+
+    /** See annotation */
+    @Prop(
+        name = "runServerWorkingDirectory",
+        isSettings = false,
+        preferPopulated = false,
+        required = false,
+        docComment = """
+            Optional parameter to customize the default working directory used by the runServer* tasks. Relative to the project directory.
+            """)
+    public @NotNull String runServerDirectory = "run/server";
 
     /** See annotation */
     @Prop(name = "versionPattern", isSettings = false, preferPopulated = false, required = false, docComment = """
@@ -1009,7 +1028,7 @@ public final class PropertiesConfiguration {
         @NotNull
         String name();
 
-        /** @return Is the property is used globally across many projects from a settings.gradle context? */
+        /** @return Is the property used globally across many projects from a settings.gradle context? */
         boolean isSettings() default false;
 
         /** @return Should the property's value be frozen in the properties file on plugin update? */
