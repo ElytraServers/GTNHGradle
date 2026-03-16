@@ -25,9 +25,10 @@ repositories {
     mavenLocal()
 }
 
-fun pluginDep(name: String, version: String): String {
-    return "${name}:${name}.gradle.plugin:${version}"
-}
+fun pluginDep(
+    name: String,
+    version: String,
+): String = "$name:$name.gradle.plugin:$version"
 
 dependencies {
     // JDOM2 for XML processing
@@ -40,7 +41,7 @@ dependencies {
     annotationProcessor("net.java.dev.jna:jna-platform:5.18.1")
 
     // All these plugins will be present in the classpath of the project using our plugin, but not activated until explicitly applied
-    api(pluginDep("com.gtnewhorizons.retrofuturagradle","1.4.9"))
+    api(pluginDep("com.gtnewhorizons.retrofuturagradle", "1.4.9"))
 
     // Settings plugins
     api(pluginDep("com.diffplug.blowdryerSetup", "1.7.1"))
@@ -53,9 +54,19 @@ dependencies {
     api(pluginDep("org.jetbrains.kotlin.jvm", "2.1.10"))
     api(pluginDep("org.jetbrains.kotlin.kapt", "2.1.10"))
     api(pluginDep("com.google.devtools.ksp", "2.1.10-1.0.29")) // 1.0.29 is the last jvm8 supporting version
-    api(pluginDep("org.ajoberstar.grgit", "4.1.1")) // 4.1.1 is the last jvm8 supporting version, unused, available for addon.gradle
+    api(
+        pluginDep(
+            "org.ajoberstar.grgit",
+            "4.1.1",
+        ),
+    ) // 4.1.1 is the last jvm8 supporting version, unused, available for addon.gradle
     api(pluginDep("de.undercouch.download", "5.6.0"))
-    api(pluginDep("com.github.gmazzo.buildconfig", "5.5.4")) // 5.5.4 is the last jvm8 supporting version, unused, available for addon.gradle
+    api(
+        pluginDep(
+            "com.github.gmazzo.buildconfig",
+            "5.5.4",
+        ),
+    ) // 5.5.4 is the last jvm8 supporting version, unused, available for addon.gradle
     api(pluginDep("com.modrinth.minotaur", "2.8.8"))
     api(pluginDep("net.darkhax.curseforgegradle", "1.1.26"))
 
@@ -79,7 +90,8 @@ gradlePlugin {
             id = "com.gtnewhorizons.gtnhconvention"
             implementationClass = "com.gtnewhorizons.gtnhgradle.GTNHConventionPlugin"
             displayName = "GTNHConvention"
-            description = "Shared buildscript logic for all GTNH mods and some other 1.7.10 mods - automatically applies all features"
+            description =
+                "Shared buildscript logic for all GTNH mods and some other 1.7.10 mods - automatically applies all features"
             tags.set(listOf("minecraft", "modding"))
         }
         create("gtnhSettingsConvention") {
@@ -98,7 +110,7 @@ gradlePlugin {
 spotless {
     encoding("UTF-8")
 
-    format ("misc") {
+    format("misc") {
         target(".gitignore")
 
         trimTrailingWhitespace()
@@ -132,14 +144,16 @@ java {
     withJavadocJar()
 }
 tasks.javadoc {
-    javadocTool.set(javaToolchains.javadocToolFor {
-        languageVersion.set(JavaLanguageVersion.of(21))
-        vendor.set(JvmVendorSpec.AZUL)
-    })
+    javadocTool.set(
+        javaToolchains.javadocToolFor {
+            languageVersion.set(JavaLanguageVersion.of(21))
+            vendor.set(JvmVendorSpec.AZUL)
+        },
+    )
     with(options as StandardJavadocDocletOptions) {
         links(
             "https://docs.gradle.org/${gradle.gradleVersion}/javadoc/",
-            "https://docs.oracle.com/en/java/javase/21/docs/api/"
+            "https://docs.oracle.com/en/java/javase/21/docs/api/",
         )
     }
 }
@@ -148,10 +162,12 @@ tasks.withType<JavaCompile> {
     options.release.set(8)
     options.encoding = "UTF-8"
 
-    javaCompiler.set(javaToolchains.compilerFor {
-        languageVersion.set(JavaLanguageVersion.of(21))
-        vendor.set(JvmVendorSpec.AZUL)
-    })
+    javaCompiler.set(
+        javaToolchains.compilerFor {
+            languageVersion.set(JavaLanguageVersion.of(21))
+            vendor.set(JvmVendorSpec.AZUL)
+        },
+    )
 }
 
 tasks.wrapper.configure {
@@ -188,7 +204,6 @@ tasks.test {
     // Skip git-based versioning inside the tests
     environment("VERSION", "1.0.0")
 }
-
 
 publishing {
     publications {
@@ -235,10 +250,13 @@ publishing {
             name = "vogRepository"
             url = uri("https://maven.elytra.cn")
             credentials {
-                username = project.findProperty("MAVEN_USERNAME") as? String ?: "NONE"
-                password = project.findProperty("MAVEN_PASSWORD") as? String ?: "NONE"
+                username = project.findProperty("MAVEN_USERNAME") as? String
+                    ?: System.getenv("MAVEN_USER")
+                    ?: return@credentials println("Unable to get publishing username")
+                password = project.findProperty("MAVEN_PASSWORD") as? String
+                    ?: System.getenv("MAVEN_PASSWORD")
+                    ?: return@credentials println("Unable to get publishing password")
             }
         }
     }
 }
-
